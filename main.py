@@ -101,11 +101,14 @@ class Statistics:
     def getCurrentState(self):
         resp = requests.get('https://api.csgorun.pro/current-state?montaznayaPena=null')
         respJSON = resp.json()
-        print(respJSON)
+
+        if resp.status_code != 200:
+            return
+        #print(respJSON)
         data = respJSON['data']
         lastRoundId = data['game']['history'][0]['id']
         lastRoundKoef = data['game']['history'][0]['crash']
-        print('got ID: ' + str(lastRoundId) + ' : ' + str(lastRoundKoef) + 'x')
+        #print('got ID: ' + str(lastRoundId) + ' : ' + str(lastRoundKoef) + 'x')
         ret = Round(lastRoundId, lastRoundKoef)
         ret.m_id = lastRoundId
         ret.m_koef = lastRoundKoef
@@ -138,7 +141,7 @@ class Statistics:
 
 
     def telegram_bot_sendtext(self, bot_message):
-        print("bot_message = " + bot_message)
+        #print("bot_message = " + bot_message)
         send_text = 'https://api.telegram.org/bot' + bot_token + '/sendMessage?chat_id=' + bot_chatID + '&text=' + self.getData()
 
         response = requests.get(send_text)
@@ -148,13 +151,14 @@ class Statistics:
     def startLoop(self):
         while(1):
             r = self.getCurrentState()
-            print("r.m_id = " + str(r.m_id) + " last: " + str(self.m_lastRoundId))
+            #print("r.m_id = " + str(r.m_id) + " last: " + str(self.m_lastRoundId))
             if r.m_id > self.m_lastRoundId:
-                self.processNewRound(r)
-                print("new round id > last round id")
-                print(self.getData())
 
-                print(self.telegram_bot_sendtext(self.getData()))
+                self.processNewRound(r)
+                print("new round id: " + r.m_id )
+                #print(self.getData())
+
+                self.telegram_bot_sendtext(self.getData())
                 # send data to tg
             time.sleep(3)
 
